@@ -66,3 +66,36 @@ now run the server again
 ```bash
 python3 manage.py runserver 8001
 ```
+
+## Api with models:
+```bash
+python3 manage.py startapp products                                    
+```
+
+in models.py add a new model:
+```python
+from django.db import models
+
+# Create your models here.
+class Product(models.Model):
+    title = models.CharField(max_length=50)
+    content = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=15, decimal_places=2, default=99.99)
+```
+then run migration
+```bash
+python3 manage.py makemigrations
+python3 manage.py migrate
+```
+
+## To run shell:
+```bash
+python manage.py shell
+```
+```python
+from products.models import Product
+Product.objects.create(title="Book", content="Harry Potter", price="12.00")
+Product.objects.create(title="Book", content="The Dome", price="39.00")
+Products.objects.all()
+```
+
