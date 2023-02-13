@@ -99,3 +99,53 @@ Product.objects.create(title="Book", content="The Dome", price="39.00")
 Products.objects.all()
 ```
 
+## To Switch to DRF:
+```python
+from rest_framework.response import response
+from rest_framework.decorators import api_view
+
+@api_view(["GET"])
+def api_home(request, *args, **kwargs):
+...
+```
+
+## create serializer in products
+```python
+from rest_framework import serializers
+
+from .models import Product
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        field = [
+            'title', 'content', 'price', 'sale_price'
+        ]
+        fields = '__all__'
+```
+then import it into your view:
+```python
+
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+from products.models import Product
+from products.serializers import ProductSerializer
+
+# Create your views here.
+@api_view(["GET"])
+def api_home(request, *args, **kwargs):
+    """
+    DRF API View
+    """
+    instance = Product.objects.all().order_by("?").first()
+    data = {}
+    if instance:
+        data = ProductSerializer(instance).data
+
+    return Response(data)
+```
+
+---
+#Stoped at [injest data with DRF views](https://youtu.be/c708Nf0cHrs?t=4486)
+
+
