@@ -145,7 +145,50 @@ def api_home(request, *args, **kwargs):
     return Response(data)
 ```
 
+currently http://localhost:8001/api/ does not exist.
+to make it work add to settings.py:
+
+```python
+INSTALLED_APPS = [
+    ...
+    'rest_framework',
+    ...
+]
+```
+
+lets make a POST method and check that the data revieved is valid:
+
+```python
+get_response = requests.post(endpoint, params={"abc": 123}, json={"title": "Hello World"}) # HTTP request
+```
+```python
+@api_view(["POST"])
+def api_home(request, *args, **kwargs):
+    """
+    DRF API View
+    """
+    serializer = ProductSerializer(data=request.data)
+    if serializer.is_valid():
+        print(serializer.data)
+        data = serializer.data
+        return Response(data)
+```
+If we want to use the data we can save the data
+```python
+instance = serializer.save()
+```
+
+you can make validation throw error using rais_exception:
+```python
+if serializer.is_valid(raise_exception=True):
+```
+
+# Generic API views
+
+
+
+
 ---
-#Stoped at [injest data with DRF views](https://youtu.be/c708Nf0cHrs?t=4486)
+<!-- #Stoped at [injest data with DRF views](https://youtu.be/c708Nf0cHrs?t=4486) -->
 
 
