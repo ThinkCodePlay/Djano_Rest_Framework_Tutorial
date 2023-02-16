@@ -189,6 +189,6 @@ if serializer.is_valid(raise_exception=True):
 
 
 ---
-<!-- #Stoped at [injest data with DRF views](https://youtu.be/c708Nf0cHrs?t=4486) -->
+#Stoped at [Link](https://youtu.be/c708Nf0cHrs?t=5460)
 
 
