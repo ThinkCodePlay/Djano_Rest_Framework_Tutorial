@@ -353,7 +353,40 @@ we can also use rest framework shorcut for fetching a single instance:
 ...
 ```
 
+## Update and Destroy API
+
+Update and delete class based views:
+```python
+class ProductUpdateAPIView(generics.UpdateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'pk'
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+
+class ProductDeleteAPIView(generics.DestroyAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'pk'
+
+    def perform_destroy(self, instance):
+        # here you can do stuff with the instance
+        print(instance)
+        return super().perform_destroy(instance)
+```
+```python
+urlpatterns = [
+    path("", views.ProductListCreateAPIView.as_view()),
+    path('<int:pk>/update/', views.ProductUpdateAPIView.as_view()),
+    path('<int:pk>/delete/', views.ProductDeleteAPIView.as_view()),
+    path('<int:pk>/', views.ProductDetailAPIView.as_view()),
+]
+```
+
+
+
 ---
-#Stoped tutorial at [this point](https://youtu.be/c708Nf0cHrs?t=6277).
+#Stoped tutorial at [this point](https://youtu.be/c708Nf0cHrs?t=7444).
 
 
