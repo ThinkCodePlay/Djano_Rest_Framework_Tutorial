@@ -185,10 +185,129 @@ if serializer.is_valid(raise_exception=True):
 
 # Generic API views
 
+## DetailAPIView
+in products.views make an single fetch endpoint:
+
+```python
+from rest_framework import generics
+from .models import Product
+from .serializers import ProductSerializer
+
+# when using Detail this means we want to get only one item
+class ProductDetailAPIView(generics.RetrieveAPIView): 
+    queryset = Product.objects.all() # used to query the data
+    serializer_class = ProductSerializer 
+    # lookup_field = 'pk' # equivelent to Product.objects.get(pk='abc'). when fetching one item use the lookup_field
+```
+
+add the urls in urls.py
+```python
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('<int:pk>/', views.ProductDetailAPIView.as_view())
+]
+```
+since we are using generic API view we can use the pk as the the lookup field as the url parameter.
+
+then add the view url to the the apps urls
+```python
+# cfehome.urls
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('api/', include('api.urls')),
+    path('api/products/', include('products.urls'))
+]
+```
+
+## CreateAPIView
+let's make another api view to create new products
+
+```python
+#views.py
+from rest_framework import generics
+from .models import Product
+from .serializers import ProductSerializer
+
+class ProductCreateAPIView(generics.CreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+class ProductDetailAPIView(generics.RetrieveAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+```
+```python
+# urls.py
+urlpatterns = [
+    path("", views.ProductCreateAPIView.as_view()),
+    path('<int:pk>/', views.ProductDetailAPIView.as_view())
+]
+```
+```python
+#create.py py_client
+import requests
+
+endpoint = "http://localhost:8001/api/products/"
+
+data = {
+    "title": "fiels is required"
+}
+get_response = requests.post(endpoint, json=data) # HTTP request
+
+print('-----')
+print(get_response.status_code)
+print(get_response.json())
+```
+
+when using generics you can use their built in functions such as on what to do on create. when using CreateAPIView you have the perform_create function
+
+```python
+class ProductCreateAPIView(generics.CreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    def perform_create(self, serializer):
+        print(serializer.validated_data)
+        content = serializer.validated_data.get('content', 'no content')
+        serializer.save(content=content)
+```
+## ListAPIView
+The straigh forward way is to do the same as we did untill now
+```python
+class ProductListAPIView(generics.RetrieveAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+```
+and then add to the ursl. but there is another option we can use.
+we can instead use a ListCreateAPIView and replace the CreateAPIView, and rename the url:
+
+```python
+class ProductListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    def perform_create(self, serializer):
+        print(serializer.validated_data)
+        content = serializer.validated_data.get('content', 'no content')
+        serializer.save(content=content)
+```
+```python
+urlpatterns = [
+    path("", views.ProductListCreateAPIView.as_view()),
+    path('<int:pk>/', views.ProductDetailAPIView.as_view())
+]
+```
+
+Now ProductListCreateAPIView is userd with POST to create and GET to fetch list of items.
+
+going to http://localhost:8001/api/products/ will also show us both the list and the option to create.
+
 
 
 
 ---
-#Stoped at [Link](https://youtu.be/c708Nf0cHrs?t=5460)
+#Stoped tutorial at [this point](https://youtu.be/c708Nf0cHrs?t=6277).
 
 
