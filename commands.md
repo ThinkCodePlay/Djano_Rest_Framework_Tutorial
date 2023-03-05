@@ -305,7 +305,53 @@ Now ProductListCreateAPIView is userd with POST to create and GET to fetch list 
 going to http://localhost:8001/api/products/ will also show us both the list and the option to create.
 
 
+# Function Based Views
 
+An alternative to using class based views is function baes views. 
+This is done by using the @api_view decorator and checking what the method is.
+Here's how we would replace the above code with function based views:
+```python
+# from function based views
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+
+@api_view(['GET', 'POST'])
+def product_alt_view(request, pk=None, *args, **kwargs):
+    method = request.method
+
+    if method == "GET":
+        if pk is not None:
+            # detail view
+            qs = Product.objects.filter(pk=pk)
+            if not qs.exists():
+                raise Http404 # this is recognized by the @api_view decorator.
+            return Response()
+        else: 
+            # list view
+            qs = Product.objects.all() # queryset
+            data = ProductSerializer(qs, many=True).data
+            return Response(data)
+    
+    if method == "POST":
+        serializer = ProductSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            content = serializer.validated_data.get('content', 'no content')
+            serializer.save(content=content)
+            return Response(serializer.data)
+```
+we can also use rest framework shorcut for fetching a single instance:
+```python
+...
+    if method == "GET":
+        if pk is not None:
+            # detail view
+            obj = get_object_or_404(Product, pk=pk)
+            data = ProductSerializer(obj, many=False).data
+            return Response(data)
+        else: 
+...
+```
 
 ---
 #Stoped tutorial at [this point](https://youtu.be/c708Nf0cHrs?t=6277).
