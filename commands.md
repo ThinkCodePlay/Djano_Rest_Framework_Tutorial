@@ -384,9 +384,42 @@ urlpatterns = [
 ]
 ```
 
+# Using Mixins
+
+Just like in function based views we can also create class based views that do more then one type of API request using mixins.
+
+```python
+from rest_framework import generics, mixins
+
+class ProductMixinView(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    generics.GenericAPIView
+    ):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'pk'
+
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        if pk is not None:
+            return self.retrieve(request, *args, **kwargs)
+        return self.list(request, *args, **kwargs)
+    
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+```
+Each type of request gets it's own function, get for GET, post for POST etc.
+
+notice that some of the fields will not be available to some mixin types.
+
+you can also use all the functions we had using the genricAPICView because the mixins extend them.
+
+checkout the docs for more details about the diffrent types of mixins: https://www.django-rest-framework.org/api-guide/generic-views/#genericapiview
 
 
 ---
-#Stoped tutorial at [this point](https://youtu.be/c708Nf0cHrs?t=7444).
+#Stoped tutorial at [this point](https://youtu.be/c708Nf0cHrs?t=8191).
 
 
