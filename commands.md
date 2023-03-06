@@ -1,18 +1,23 @@
 # Tutorial
 
 ## Setup
+
 ```bash
 python3 -m venv venv
 source venv/bin/activate  
 pip install -r requirements.txt
 django-admin startproject cfehome .
 ```
+
 ## Run Server
+
 ```bash
+source /Users/yonatankr/projects/django/rest_tutorial/venv/bin/activate   
 python3 manage.py runserver 8001
 ```
 
-## Start new app:
+## Create new app
+
 ```bash
 python3 manage.py startapp api
 ```
@@ -34,6 +39,7 @@ INSTALLED_APPS = [
 ```
 
 in the app folder in views.py add the endpoint:
+
 ```python
 from django.http import JsonResponse
 
@@ -43,6 +49,7 @@ def api_home(request, *args, **kwargs):
 ```
 
 add a urls.py folder
+
 ```python
 from django.urls import path
 from . import views
@@ -53,6 +60,7 @@ urlpatterns = [
 ```
 
 now import it to the global urls
+
 ```python
 from django.contrib import admin
 from django.urls import path, include
@@ -62,17 +70,21 @@ urlpatterns = [
     path('api/', include('api.urls'))
 ]
 ```
+
 now run the server again
+
 ```bash
 python3 manage.py runserver 8001
 ```
 
-## Api with models:
+## Api with models
+
 ```bash
 python3 manage.py startapp products                                    
 ```
 
 in models.py add a new model:
+
 ```python
 from django.db import models
 
@@ -82,16 +94,20 @@ class Product(models.Model):
     content = models.TextField(blank=True, null=True)
     price = models.DecimalField(max_digits=15, decimal_places=2, default=99.99)
 ```
+
 then run migration
+
 ```bash
 python3 manage.py makemigrations
 python3 manage.py migrate
 ```
 
-## To run shell:
+## To run shell
+
 ```bash
 python manage.py shell
 ```
+
 ```python
 from products.models import Product
 Product.objects.create(title="Book", content="Harry Potter", price="12.00")
@@ -99,7 +115,8 @@ Product.objects.create(title="Book", content="The Dome", price="39.00")
 Products.objects.all()
 ```
 
-## To Switch to DRF:
+## To Switch to DRF
+
 ```python
 from rest_framework.response import response
 from rest_framework.decorators import api_view
@@ -110,6 +127,7 @@ def api_home(request, *args, **kwargs):
 ```
 
 ## create serializer in products
+
 ```python
 from rest_framework import serializers
 
@@ -123,7 +141,9 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
         fields = '__all__'
 ```
+
 then import it into your view:
+
 ```python
 
 from rest_framework.response import Response
@@ -145,7 +165,7 @@ def api_home(request, *args, **kwargs):
     return Response(data)
 ```
 
-currently http://localhost:8001/api/ does not exist.
+currently <http://localhost:8001/api/> does not exist.
 to make it work add to settings.py:
 
 ```python
@@ -161,6 +181,7 @@ lets make a POST method and check that the data revieved is valid:
 ```python
 get_response = requests.post(endpoint, params={"abc": 123}, json={"title": "Hello World"}) # HTTP request
 ```
+
 ```python
 @api_view(["POST"])
 def api_home(request, *args, **kwargs):
@@ -173,12 +194,15 @@ def api_home(request, *args, **kwargs):
         data = serializer.data
         return Response(data)
 ```
+
 If we want to use the data we can save the data
+
 ```python
 instance = serializer.save()
 ```
 
 you can make validation throw error using rais_exception:
+
 ```python
 if serializer.is_valid(raise_exception=True):
 ```
@@ -186,6 +210,7 @@ if serializer.is_valid(raise_exception=True):
 # Generic API views
 
 ## DetailAPIView
+
 in products.views make an single fetch endpoint:
 
 ```python
@@ -201,6 +226,7 @@ class ProductDetailAPIView(generics.RetrieveAPIView):
 ```
 
 add the urls in urls.py
+
 ```python
 from django.urls import path
 from . import views
@@ -209,9 +235,11 @@ urlpatterns = [
     path('<int:pk>/', views.ProductDetailAPIView.as_view())
 ]
 ```
+
 since we are using generic API view we can use the pk as the the lookup field as the url parameter.
 
 then add the view url to the the apps urls
+
 ```python
 # cfehome.urls
 urlpatterns = [
@@ -222,6 +250,7 @@ urlpatterns = [
 ```
 
 ## CreateAPIView
+
 let's make another api view to create new products
 
 ```python
@@ -238,6 +267,7 @@ class ProductDetailAPIView(generics.RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 ```
+
 ```python
 # urls.py
 urlpatterns = [
@@ -245,6 +275,7 @@ urlpatterns = [
     path('<int:pk>/', views.ProductDetailAPIView.as_view())
 ]
 ```
+
 ```python
 #create.py py_client
 import requests
@@ -273,13 +304,17 @@ class ProductCreateAPIView(generics.CreateAPIView):
         content = serializer.validated_data.get('content', 'no content')
         serializer.save(content=content)
 ```
+
 ## ListAPIView
+
 The straigh forward way is to do the same as we did untill now
+
 ```python
 class ProductListAPIView(generics.RetrieveAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
 ```
+
 and then add to the ursl. but there is another option we can use.
 we can instead use a ListCreateAPIView and replace the CreateAPIView, and rename the url:
 
@@ -293,6 +328,7 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
         content = serializer.validated_data.get('content', 'no content')
         serializer.save(content=content)
 ```
+
 ```python
 urlpatterns = [
     path("", views.ProductListCreateAPIView.as_view()),
@@ -302,14 +338,14 @@ urlpatterns = [
 
 Now ProductListCreateAPIView is userd with POST to create and GET to fetch list of items.
 
-going to http://localhost:8001/api/products/ will also show us both the list and the option to create.
-
+going to <http://localhost:8001/api/products/> will also show us both the list and the option to create.
 
 # Function Based Views
 
-An alternative to using class based views is function baes views. 
+An alternative to using class based views is function baes views.
 This is done by using the @api_view decorator and checking what the method is.
 Here's how we would replace the above code with function based views:
+
 ```python
 # from function based views
 from rest_framework.decorators import api_view
@@ -340,7 +376,9 @@ def product_alt_view(request, pk=None, *args, **kwargs):
             serializer.save(content=content)
             return Response(serializer.data)
 ```
+
 we can also use rest framework shorcut for fetching a single instance:
+
 ```python
 ...
     if method == "GET":
@@ -356,6 +394,7 @@ we can also use rest framework shorcut for fetching a single instance:
 ## Update and Destroy API
 
 Update and delete class based views:
+
 ```python
 class ProductUpdateAPIView(generics.UpdateAPIView):
     queryset = Product.objects.all()
@@ -375,6 +414,7 @@ class ProductDeleteAPIView(generics.DestroyAPIView):
         print(instance)
         return super().perform_destroy(instance)
 ```
+
 ```python
 urlpatterns = [
     path("", views.ProductListCreateAPIView.as_view()),
@@ -410,16 +450,74 @@ class ProductMixinView(
     def post(self, request, *args, **kwargs):
         return self.create(request, *args, **kwargs)
 ```
+
 Each type of request gets it's own function, get for GET, post for POST etc.
 
 notice that some of the fields will not be available to some mixin types.
 
 you can also use all the functions we had using the genricAPICView because the mixins extend them.
 
-checkout the docs for more details about the diffrent types of mixins: https://www.django-rest-framework.org/api-guide/generic-views/#genericapiview
+checkout the docs for more details about the diffrent types of mixins: <https://www.django-rest-framework.org/api-guide/generic-views/#genericapiview>
 
+# Authorization
+
+We will also use permission classes to authenticate users
+
+```python
+from rest_framework import generics, mixins, permissions
+
+class ProductListCreateAPIView(generics.ListCreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        content = serializer.validated_data.get('content', 'no content')
+        serializer.save(content=content)
+```
+
+Another example is the IsAuthenticatedOrReadOnly that will only return list for all users, and create for authenticated users.
+
+To authenticate users:
+
+```python
+from rest_framework import generics, mixins, permissions, authentication
+
+
+
+```
+
+trying to hit this endpoint will return 403 response.
+
+docs on permissions: <https://www.django-rest-framework.org/api-guide/permissions/>
+
+To create an admin user:
+
+```base
+python3 manage.py createsuperuser
+```
+
+Then go to <http://localhost:8001/admin/> to login
+
+After login you can go to <http://localhost:8001/api/products/> and you will be able to create new products.
+
+We will learn to use token authentication later.
+
+## user and group permissions
+
+Login as admin and create a user
+
+We can also add groups and what actions are allowed.
+Then in the user you can add the user into that group.
+
+To test this we will use the DjangoModelPermissions
+
+```python
+permission_classes = [permissions.DjangoModelPermissions]
+```
+
+To add this to another action you need to add the permission class to all views that need it.
 
 ---
-#Stoped tutorial at [this point](https://youtu.be/c708Nf0cHrs?t=8191).
 
-
+# Stoped tutorial at [this point](https://youtu.be/c708Nf0cHrs?t=9053)
